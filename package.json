@@ -7,25 +7,51 @@
   "scripts": {
     "dev": "plasmo dev",
     "build": "plasmo build",
-    "package": "plasmo package"
+    "package": "plasmo package",
+    "lint": "npx eslint . --ext ts --fix",
+    "fmt": "npx prettier --write ."
   },
   "dependencies": {
+    "@atproto/api": "^0.3.13",
+    "@fortawesome/fontawesome-svg-core": "^6.4.0",
+    "@fortawesome/free-solid-svg-icons": "^6.4.0",
+    "@fortawesome/vue-fontawesome": "^3.0.3",
+    "@plasmohq/messaging": "^0.5.0",
+    "@plasmohq/storage": "^1.6.2",
+    "@vuelidate/core": "^2.0.3",
+    "@vuelidate/validators": "^2.0.3",
+    "bootstrap": "^5.3.0",
     "plasmo": "0.77.5",
-    "react": "18.2.0",
-    "react-dom": "18.2.0"
+    "vue": "^3.3.4"
   },
   "devDependencies": {
+    "@plasmohq/prettier-plugin-sort-imports": "3.6.4",
     "@types/chrome": "0.0.237",
     "@types/node": "20.2.4",
-    "@types/react": "18.2.7",
-    "@types/react-dom": "18.2.4",
+    "@typescript-eslint/eslint-plugin": "^5.61.0",
+    "@typescript-eslint/parser": "^5.61.0",
+    "eslint": "^8.44.0",
+    "eslint-config-prettier": "^8.8.0",
+    "eslint-config-standard-with-typescript": "^36.0.0",
+    "eslint-plugin-prettier": "^4.2.1",
+    "eslint-plugin-vue": "^9.15.1",
     "prettier": "2.8.8",
-    "typescript": "5.0.4",
-    "@plasmohq/prettier-plugin-sort-imports": "3.6.4"
+    "typescript": "5.0.4"
   },
   "manifest": {
+    "permissions": [
+      "activeTab",
+      "tabs"
+    ],
     "host_permissions": [
-      "https://*/*"
-    ]
+      "https://bsky.app/*",
+      "https://bsky.social/*",
+      "https://twitter.com/*"
+    ],
+    "browser_specific_settings": {
+      "gecko": {
+        "id": "{61643715-8437-4C7F-B4BA-EA6053BD4250}"
+      }
+    }
   }
 }

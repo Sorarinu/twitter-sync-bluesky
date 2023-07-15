@@ -1,0 +1,11 @@
+package.json
+package-lock.json
+
+build
+*.md
+
+.plasmo
+.github
+.eslintrc.js
+.prettierrc.cjs
+tsconfig.json
