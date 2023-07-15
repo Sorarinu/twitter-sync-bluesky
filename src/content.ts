@@ -7,8 +7,6 @@ export const config: PlasmoCSConfig = {
   all_frames: false
 }
 
-let twitterSyncBlueskyExecuted = false
-
 const twitterSyncBluesky = async ({
   userId,
   password
@@ -16,70 +14,85 @@ const twitterSyncBluesky = async ({
   userId: string
   password: string
 }): Promise<void> => {
-  if (twitterSyncBlueskyExecuted) return
-
   const agent: BskyClient = await BskyClient.createAgent(userId, password)
 
-  const sideBarTweetButton = document.querySelector(
-    '[data-testid="SideNav_NewTweet_Button"]'
-  )
+  const inlineTweetButton = (await getElement(
+    '[data-testid="tweetButtonInline"]',
+    'Inline Tweet button not found.'
+  )) as HTMLInputElement
 
-  if (sideBarTweetButton == null) {
-    console.error('Side bar Tweet button not found.')
-    return
+  appendSwitchSyncElement(inlineTweetButton)
+
+  inlineTweetButton.onclick = createTweetHandler(agent)
+
+  const sideBarTweetButton = (await getElement(
+    '[data-testid="SideNav_NewTweet_Button"]',
+    'Side bar Tweet button not found.'
+  )) as HTMLInputElement
+
+  sideBarTweetButton.onclick = async () => {
+    const tweetButton = (await getElement(
+      '[data-testid="toolBar"] [data-testid="tweetButton"]',
+      'Tweet button not found.'
+    )) as HTMLInputElement
+
+    appendSwitchSyncElement(tweetButton)
+
+    tweetButton.onclick = createTweetHandler(agent)
   }
-
-  sideBarTweetButton.addEventListener('click', () => {
-    void syncTweetToBsky(agent)
-  })
-
-  twitterSyncBlueskyExecuted = true
 }
 
-const syncTweetToBsky = async (agent: BskyClient): Promise<void> => {
-  const tweetButton = await waitQuerySelector(
-    '[data-testid="toolBar"] [data-testid="tweetButton"]'
-  )
-
-  if (tweetButton == null) {
-    console.error('Tweet button not found.')
-    return
-  }
-
-  const tweetButtonParentElement = tweetButton.parentElement
-
-  if (tweetButtonParentElement == null) {
-    console.error('Tweet button parent element not found.')
-    return
-  }
-
-  if (tweetButtonParentElement.querySelector('#SwitchSync') == null) {
-    tweetButtonParentElement.insertAdjacentHTML(
-      'afterbegin',
-      `
-  <div class="form-check form-switch">
-    <input class="form-check-input" type="checkbox" id="SwitchSync" checked>
-    <label class="form-check-label text-light" for="SwitchSync">Sync Bsky</label>
-  </div>
-  `
-    )
-  }
-
-  tweetButton.addEventListener('click', () => {
+const createTweetHandler = (agent: BskyClient): (() => void) => {
+  return () => {
     const isSync =
       (document.querySelector('#SwitchSync') as HTMLInputElement)?.checked ||
       false
-
     if (isSync) {
       const text = (
         document.querySelector(
           '[data-testid="tweetTextarea_0"]'
         ) as HTMLInputElement
       )?.innerText
-
       void agent.post(text)
     }
-  })
+  }
+}
+
+const getElement = async (
+  selector: string,
+  errorMsg: string,
+  node: Document = document,
+  timeout: number = 3000
+): Promise<Element> => {
+  const element = await waitQuerySelector(selector, node, timeout)
+  if (element == null) {
+    throw new Error(errorMsg)
+  }
+  return element as HTMLInputElement
+}
+
+const getElementParent = (element: Element): Element => {
+  const parent = element.parentElement
+  if (parent == null) {
+    throw new Error('parent element not found.')
+  }
+  return parent
+}
+
+const appendSwitchSyncElement = (element: Element): void => {
+  const parentElement = getElementParent(element)
+
+  if (parentElement.querySelector('#SwitchSync') == null) {
+    parentElement.insertAdjacentHTML(
+      'afterbegin',
+      `
+      <div class="form-check form-switch">
+        <input class="form-check-input" type="checkbox" id="SwitchSync" checked>
+        <label class="form-check-label text-light" for="SwitchSync">Sync Bsky</label>
+      </div>
+    `
+    )
+  }
 }
 
 const waitQuerySelector = async (
