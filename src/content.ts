@@ -7,42 +7,53 @@ export const config: PlasmoCSConfig = {
   all_frames: false
 }
 
-const twitterSyncBluesky = async ({
-  userId,
-  password
-}: {
-  userId: string
+const twitterSyncBluesky = async (
+  userId: string,
   password: string
-}): Promise<void> => {
+): Promise<void> => {
   const agent: BskyClient = await BskyClient.createAgent(userId, password)
 
-  const inlineTweetButton = (await getElement(
-    '[data-testid="tweetButtonInline"]',
-    'Inline Tweet button not found.'
-  )) as HTMLInputElement
-
-  appendSwitchSyncElement(inlineTweetButton)
-
-  inlineTweetButton.onclick = createTweetHandler(agent)
-
-  const sideBarTweetButton = (await getElement(
-    '[data-testid="SideNav_NewTweet_Button"]',
-    'Side bar Tweet button not found.'
-  )) as HTMLInputElement
-
-  sideBarTweetButton.onclick = async () => {
-    const tweetButton = (await getElement(
-      '[data-testid="toolBar"] [data-testid="tweetButton"]',
-      'Tweet button not found.'
+  let inlineTweetButton
+  try {
+    inlineTweetButton = (await getElement(
+      '[data-testid="tweetButtonInline"]',
+      'Inline Tweet button not found.'
     )) as HTMLInputElement
 
-    appendSwitchSyncElement(tweetButton)
+    appendSwitchSyncElement(inlineTweetButton)
 
-    tweetButton.onclick = createTweetHandler(agent)
+    inlineTweetButton.onclick = createTweetHandler(agent, userId, password)
+  } catch (e) {
+    console.warn(e)
+  }
+
+  let sideBarTweetButton
+  try {
+    sideBarTweetButton = (await getElement(
+      '[data-testid="SideNav_NewTweet_Button"]',
+      'Side bar Tweet button not found.'
+    )) as HTMLInputElement
+
+    sideBarTweetButton.onclick = async () => {
+      const tweetButton = (await getElement(
+        '[data-testid="toolBar"] [data-testid="tweetButton"]',
+        'Tweet button not found.'
+      )) as HTMLInputElement
+
+      appendSwitchSyncElement(tweetButton)
+
+      tweetButton.onclick = createTweetHandler(agent, userId, password)
+    }
+  } catch (e) {
+    console.warn(e)
   }
 }
 
-const createTweetHandler = (agent: BskyClient): (() => void) => {
+const createTweetHandler = (
+  agent: BskyClient,
+  userId: string,
+  password: string
+): (() => void) => {
   return () => {
     const isSync =
       (document.querySelector('#SwitchSync') as HTMLInputElement)?.checked ||
@@ -54,6 +65,8 @@ const createTweetHandler = (agent: BskyClient): (() => void) => {
         ) as HTMLInputElement
       )?.innerText
       void agent.post(text)
+
+      void twitterSyncBluesky(userId, password)
     }
   }
 }
@@ -62,13 +75,18 @@ const getElement = async (
   selector: string,
   errorMsg: string,
   node: Document = document,
-  timeout: number = 3000
-): Promise<Element> => {
-  const element = await waitQuerySelector(selector, node, timeout)
-  if (element == null) {
-    throw new Error(errorMsg)
+  timeout: number = 200
+): Promise<Element | null> => {
+  try {
+    const element = await waitQuerySelector(selector, node, timeout)
+    if (element == null) {
+      throw new Error(errorMsg)
+    }
+    return element as HTMLInputElement
+  } catch (e) {
+    console.warn(e)
+    return null
   }
-  return element as HTMLInputElement
 }
 
 const getElementParent = (element: Element): Element => {
@@ -128,10 +146,7 @@ chrome.runtime.onMessage.addListener(
     sendResponse
   ) => {
     if (message.name === 'twitter-sync-bluesky') {
-      twitterSyncBluesky({
-        userId: message.body.userId,
-        password: message.body.password
-      })
+      twitterSyncBluesky(message.body.userId, message.body.password)
         .then(() => {
           sendResponse({ hasError: false })
         })
