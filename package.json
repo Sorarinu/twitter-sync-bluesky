@@ -39,19 +39,8 @@
     "typescript": "5.0.4"
   },
   "manifest": {
-    "permissions": [
-      "activeTab",
-      "tabs"
-    ],
     "host_permissions": [
-      "https://bsky.app/*",
-      "https://bsky.social/*",
       "https://twitter.com/*"
-    ],
-    "browser_specific_settings": {
-      "gecko": {
-        "id": "{61643715-8437-4C7F-B4BA-EA6053BD4250}"
-      }
-    }
+    ]
   }
 }
