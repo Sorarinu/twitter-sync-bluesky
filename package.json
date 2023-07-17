@@ -1,7 +1,7 @@
 {
   "name": "twitter-sync-bluesky",
   "displayName": "Twitter sync bluesky",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "Automatically post your message on Twitter to Bluesky.",
   "author": "Sorarinu",
   "scripts": {
