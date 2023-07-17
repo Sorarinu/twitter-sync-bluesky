@@ -8,7 +8,7 @@ Synchronize tweets posted to Twitter to Bluesky.
 
 ## Install Extentions
 
-[Chrome Webstore](https://chrome.google.com/webstore/detail/twitter-sync-bluesky/eionlngmkedemdaeaakelgdbnhlnepof/related?hl=ja&authuser=0)
+[Chrome Webstore](https://chrome.google.com/webstore/detail/twitter-sync-bluesky/eionlngmkedemdaeaakelgdbnhlnepof)
 
 ## LICENCE
 This software is released under the MIT License, see [LICENSE](./LICENCE)
